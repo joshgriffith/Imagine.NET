@@ -4,6 +4,10 @@ using System.Text.RegularExpressions;
 namespace Imagine.Extensions {
     public static class StringExtensions {
         
+        public static string Pluralize(this string input) {
+            return input.EndsWith("s") ? input : (input + "s");
+        }
+
         public static string SplitCamelCase(this string input, char splitter = ' ') {
             return Regex.Replace(Regex.Replace(input, @"(\P{Ll})(\P{Ll}\p{Ll})", "$1" + splitter + "$2"), @"(\p{Ll})(\P{Ll})", "$1" + splitter + "$2");
         }

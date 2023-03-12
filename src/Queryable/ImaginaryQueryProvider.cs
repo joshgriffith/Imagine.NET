@@ -2,7 +2,6 @@
 using System.Linq.Expressions;
 using System.Reflection;
 using ExpressionToCodeLib;
-using Newtonsoft.Json;
 
 namespace Imagine.Queryable {
     public class ImaginaryQueryProvider : IQueryProvider {

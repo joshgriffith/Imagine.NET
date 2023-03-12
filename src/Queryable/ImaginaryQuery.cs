@@ -7,8 +7,8 @@ namespace Imagine.Queryable {
         public Expression Expression { get; }
         public IQueryProvider Provider { get; }
 
-        public ImaginaryQuery(Imagination imagination, object prompt, string metaPrompt = "", int count = 5) {
-            Provider = new ImaginaryQueryProvider(imagination, prompt, metaPrompt, count);
+        public ImaginaryQuery(Imagination imagination, object data, string prompt = "", int count = 5) {
+            Provider = new ImaginaryQueryProvider(imagination, data, prompt, count);
             Expression = Expression.Constant(this);
         }
 

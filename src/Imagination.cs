@@ -4,14 +4,20 @@ using Imagine.Extensions;
 using Imagine.OpenAI;
 using Imagine.Queryable;
 using Imagine.Schemas;
+using Imagine.Utilities;
 
 namespace Imagine
 {
     public class Imagination {
+        private const int SampleContinuationCount = 5;
         private readonly OpenAIClient _client;
+        private readonly decimal _temperature;
+        private readonly int _maxTokens;
 
-        public Imagination(string openAiKey) {
+        public Imagination(string openAiKey, decimal temperature = 0, int maxTokens = 1024) {
             _client = new OpenAIClient(openAiKey);
+            _temperature = temperature;
+            _maxTokens = maxTokens;
         }
 
         public IQueryable<T> Imagine<T>(object data, string prompt = "", int count = 0) {
@@ -30,123 +36,50 @@ namespace Imagine
                 data = $"get {count} {type.Name} results";
             }
 
-            var metaType = "rules";
+            var dataTypeName = "rules";
 
             if (data is IList list) {
-                metaType = list.GetType().GetGenericArguments().First().Name;
-
-                if (!metaType.EndsWith("s")) {
-                    metaType += "s";
-                }
+                dataTypeName = list.GetType().GetGenericArguments().First().Name;
             }
 
-            var pluralizedType = type.Name;
-
-            if (!type.Name.EndsWith("s")) {
-                pluralizedType += "s";
-            }
-
-            var settings = new JsonSerializerSettings();
-            settings.NullValueHandling = NullValueHandling.Ignore;
-
+            dataTypeName = dataTypeName.Pluralize();
+            
             var indeterminate = count == 0 || data is IList;
             var remaining = count;
-            var schema = TypescriptSchemaProvider.GetSchema(type);
-            var systemMessage = schema + Environment.NewLine + Environment.NewLine + $"Generate {type.Name} as JSON using the provided {metaType}. Do not respond with anything except JSON.";
-            var user = $"Given these {metaType.ToLower()}: {JsonConvert.SerializeObject(data, settings)}";
+            var userMessage = $"Given these {dataTypeName.ToLower()}: {JsonConvert.SerializeObject(data, JsonSanitizer.Settings)}";
 
             if (indeterminate) {
-                user += Environment.NewLine + $"Generate {pluralizedType}";
+                userMessage += Environment.NewLine + $"Generate {type.Name.Pluralize()}";
             }
             else {
-                user += Environment.NewLine + $"Generate {count} {type.Name}";
+                userMessage += Environment.NewLine + $"Generate {count} {type.Name.Pluralize()}";
             }
 
             if (!string.IsNullOrEmpty(metaPrompt)) {
-                user += " regarding " + metaPrompt;
+                userMessage += " regarding " + metaPrompt;
             }
             
             while (indeterminate || remaining > 0) {
-                
-                var messages = new List<OpenAIChatMessage> {
-                    new() {
-                        Content = systemMessage,
-                        Role = "system"
-                    },
-                    new () {
-                        Content = user,
-                        Role = "user"
-                    }
+
+                var query = new OpenAIChatQuery {
+                    MaxTokens = _maxTokens,
+                    Temperature = _temperature
                 };
 
-                if (output.Any()) {
-                    var samples = JsonConvert.SerializeObject(output.TakeLast(4));
+                query.AddMessage(GetSystemMessage(type, dataTypeName), OpenAIRoles.System);
+                query.AddMessage(userMessage);
 
-                    messages.Add(new () {
-                        Content = samples[..^1] + ",",
-                        Role = "assistant"
-                    });
+                if (output.Any()) {
+                    var samples = JsonConvert.SerializeObject(output.TakeLast(SampleContinuationCount));
+                    query.AddMessage(samples[..^1] + ",", OpenAIRoles.Assistant);
                 }
                 else {
-                    messages.Add(new () {
-                        Content = $"let {type.Name}Results = [",
-                        Role = "assistant"
-                    });
+                    query.AddMessage($"var {type.Name}Results = [", OpenAIRoles.Assistant);
                 }
 
-                var result = await _client.CompleteChatAsync(new OpenAIChatQuery {
-                    Messages = messages,
-                    MaxTokens = 1024,
-                    Temperature = 0,
-                    Stops = new List<string> {
-                        "]",
-                        "*/"
-                    }
-                });
+                var result = await _client.CompleteChatAsync(query);
 
-                /*var result = await _client.CompleteTextAsync(new TextCompletionRequest {
-                    Text = prompt,
-                    MaxTokens = 1024,
-                    Temperature = 0.2m,
-                    Stops = new List<string> {
-                        "]"
-                    }
-                });*/
-
-                var json = result.Text;
-                
-                if (!json.StartsWith("[")) {
-                    var offset = json.IndexOf("[");
-
-                    if (offset >= 0) {
-                        json = json.Substring(offset);
-                    }
-                    else {
-                        json = "[" + json;
-                    }
-                }
-                
-                var results = 0;
-
-                foreach(var closedBrace in json.GetOccurancesOf("}").ToList().ForEachReverse()) {
-                    if (results > 0 && json[closedBrace + 1] == ',') {
-                        continue;
-                    }
-
-                    json = json.Insert(closedBrace + 1, ",");
-                    results += 1;
-                }
-
-                var openBraces = json.GetOccurancesOf("{").ToList();
-                var closedBraces = json.GetOccurancesOf("}").ToList();
-
-                var lastRecord = Math.Min(openBraces.Count, closedBraces.Count);
-
-                json = json.Substring(0, closedBraces[lastRecord - 1] + 1) + "]";
-
-                var completedEntries = JsonConvert.DeserializeObject<List<T>>(json, new JsonSerializerSettings {
-                    NullValueHandling = NullValueHandling.Ignore
-                });
+                var completedEntries = JsonSanitizer.Deserialize<T>(result.Text);
 
                 if(completedEntries.Count == 0) {
                     throw new Exception("Failed to complete type: " + type.Name);
@@ -164,6 +97,12 @@ namespace Imagine
                 return output.ToList();
             
             return output.Take(count).ToList();
+        }
+        
+        private string GetSystemMessage(Type type, string dataTypeName) {
+            var schema = TypescriptSchemaProvider.GetSchema(type);
+            var systemMessage = schema + Environment.NewLine + Environment.NewLine + $"Generate {type.Name} as JSON using the provided {dataTypeName}. Do not respond with anything except JSON.";
+            return systemMessage;
         }
     }
 }
