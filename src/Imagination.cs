@@ -32,10 +32,6 @@ namespace Imagine
             var output = new List<T>();
             var type = typeof(T);
 
-            if (data == string.Empty) {
-                data = $"get {count} {type.Name} results";
-            }
-
             var dataTypeName = "rules";
 
             if (data is IList list) {
@@ -46,13 +42,17 @@ namespace Imagine
             
             var indeterminate = count == 0 || data is IList;
             var remaining = count;
-            var userMessage = $"Given these {dataTypeName.ToLower()}: {JsonConvert.SerializeObject(data, JsonSanitizer.Settings)}";
+            var userMessage = string.Empty;
+
+            if (data != null && data.ToString().Length > 0) {
+                userMessage += $"Given these {dataTypeName.ToLower()}: {JsonConvert.SerializeObject(data, JsonSanitizer.Settings)}" + Environment.NewLine;
+            }
 
             if (indeterminate) {
-                userMessage += Environment.NewLine + $"Generate {type.Name.Pluralize()}";
+                userMessage += $"Generate {type.Name.Pluralize()}";
             }
             else {
-                userMessage += Environment.NewLine + $"Generate {count} {type.Name.Pluralize()}";
+                userMessage += $"Generate {count} {type.Name.Pluralize()}";
             }
 
             if (!string.IsNullOrEmpty(metaPrompt)) {
