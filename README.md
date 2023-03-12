@@ -56,8 +56,8 @@ combatant2.Abilities = imagination.Imagine<Ability>(combatant2, count: 5).ToList
 
 var combatants = new List<Combatant> { combatant1, combatant2 };
 
-// Now lets imagine a battle to the death between the two combatants
-var rounds = imagination.Imagine<CombatRound>(combatants, "to the death").ToList();
+// Simulate 10 rounds of combat in the snow
+var rounds = imagination.Imagine<CombatRound>(combatants, "snow", count: 10).ToList();
             
 public class Combatant {
   public string Name;
