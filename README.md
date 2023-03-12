@@ -40,3 +40,40 @@ public class SMSMessage {
   public string Content;
 }
 ```
+
+#### Generate character abilities and then simulate a battle
+```C#
+var imagination = new Imagination("GPT API KEY");
+
+var combatant1 = new Combatant { Name = "Josh", Description = "A master of canine magic" };
+var combatant2 = new Combatant { Name = "Mack", Description = "A master of feline magic" };
+
+// Lets imagine 5 abilities for combatant1
+combatant1.Abilities = imagination.Imagine<Ability>(combatant1, count: 5).ToList();
+
+// Now imagine 5 abilities for combatant2
+combatant2.Abilities = imagination.Imagine<Ability>(combatant2, count: 5).ToList();
+
+var combatants = new List<Combatant> { combatant1, combatant2 };
+
+// Now lets imagine a battle to the death between the two combatants
+var rounds = imagination.Imagine<CombatRound>(combatants, "to the death").ToList();
+            
+public class Combatant {
+  public string Name;
+  public string Description;
+  public List<Ability> Abilities;
+}
+
+public class Ability {
+  public string Name;
+  public string Description;
+}
+```
+
+## Use cases
+ - Procedural content generation
+ - Data analysis
+ - Semantic reasoning
+ - ETL (extract-transform-load)
+ - Unit test data generation
