@@ -69,6 +69,10 @@ public class Ability {
   public string Name;
   public string Description;
 }
+
+public class CombatRound {
+  public string Description;
+}
 ```
 
 ## Use cases
