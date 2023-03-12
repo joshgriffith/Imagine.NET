@@ -11,11 +11,16 @@ namespace Imagine.Utilities {
         internal static List<T>? Deserialize<T>(string json) {
             var sanitized = Sanitize(json);
 
-            return JsonConvert.DeserializeObject<List<T>>(sanitized, Settings);
+            try {
+                return JsonConvert.DeserializeObject<List<T>>(sanitized, Settings);
+            }
+            catch (Exception exception) {
+                throw new Exception($"Unable to parse: {sanitized}", exception);
+            }
         }
 
         internal static string Sanitize(string json) {
-            if (json.Length <= 4) {
+            if (string.IsNullOrEmpty(json) || json.Length <= 4) {
                 return "[]";
             }
 

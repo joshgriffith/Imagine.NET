@@ -7,11 +7,19 @@ namespace Imagine.Schemas {
         public static string GetSchema(Type type) {
 
             var types = new List<Type> { type };
+
+            void TryAddType(Type type) {
+                if (type.IsClass && !type.Namespace.StartsWith("System") && !types.Contains(type)) {
+                    types.Add(type);
+                }
+            }
             
             foreach (var property in GetProperties(type)) {
-                if (property.PropertyType.IsClass && !property.PropertyType.Namespace.StartsWith("System") && !types.Contains(property.PropertyType)) {
-                    types.Add(property.PropertyType);
-                }
+                TryAddType(property.PropertyType);
+            }
+
+            foreach (var field in GetFields(type)) {
+                TryAddType(field.FieldType);
             }
 
             return string.Join(Environment.NewLine, types.Select(InternalGetSchema));
@@ -23,6 +31,10 @@ namespace Imagine.Schemas {
             
             foreach (var property in GetProperties(type)) {
                 builder.AppendLine($"  {property.Name}: {ResolveType(property.PropertyType)};");
+            }
+
+            foreach (var field in GetFields(type)) {
+                builder.AppendLine($"  {field.Name}: {ResolveType(field.FieldType)};");
             }
 
             builder.AppendLine("}");
@@ -60,11 +72,11 @@ namespace Imagine.Schemas {
         }
 
         private static List<PropertyInfo> GetProperties(Type type) {
-            return type
-                .GetProperties()
-                .Where(each => each.CanWrite)
-                .OrderByDescending(each => each.Name)
-                .ToList();
+            return type.GetProperties().Where(each => each.CanWrite).OrderByDescending(each => each.Name).ToList();
+        }
+
+        private static List<FieldInfo> GetFields(Type type) {
+            return type.GetFields().OrderByDescending(each => each.Name).ToList();
         }
 
         private static Type GetEnumerableType(Type type) {

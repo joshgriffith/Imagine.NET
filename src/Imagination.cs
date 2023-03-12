@@ -40,7 +40,7 @@ namespace Imagine
 
             dataTypeName = dataTypeName.Pluralize();
             
-            var indeterminate = count == 0 || data is IList;
+            var indeterminate = (count == 0);
             var remaining = count;
             var userMessage = string.Empty;
 
