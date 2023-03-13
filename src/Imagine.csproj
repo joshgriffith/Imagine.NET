@@ -18,6 +18,7 @@
     <PackageProjectUrl>https://github.com/joshgriffith/Imagine.NET</PackageProjectUrl>
     <RepositoryUrl>https://github.com/joshgriffith/Imagine.NET</RepositoryUrl>
     <PackageTags>ai gpt .net C# linq</PackageTags>
+    <Description>Imagine.NET enables you to query and transform data from GPT using LINQ as if it were a database.</Description>
   </PropertyGroup>
 
   <ItemGroup>

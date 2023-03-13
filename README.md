@@ -13,7 +13,7 @@ Provide a .NET Type and a text prompt to get back a list of data that conforms t
 ### List + Type + Prompt
 Provide a list of input data, a .NET Type and a text prompt and get back a new list of data derived from the list and prompt.
   
-![Diagram](design.png?raw=true "Diagram")
+![Diagram](/images/design.png?raw=true "Diagram")
 
 
 ## Getting started
