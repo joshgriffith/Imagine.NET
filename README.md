@@ -18,10 +18,10 @@ Provide a list of input data, a .NET Type and a text prompt and get back a new l
 
 ## Getting started
 
-#### Generate a list of 5 people whose first name start with 's'
+#### Generate a list of 5 people whose first name start with 'b' and last name starts with 'd'
 ```C#
 var imagination = new Imagination("GPT API KEY");
-var results = imagination.Imagine<Person>(count: 5).Where(person => person.FirstName.StartsWith("s")).ToList();
+var results = imagination.Imagine<Person>(count: 5).Where(person => person.FirstName.StartsWith("b") && person.LastName.StartsWith("d")).ToList();
 
 public class Person {
     public string FirstName;
