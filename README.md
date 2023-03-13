@@ -30,6 +30,8 @@ public class Person {
 }
 ```
 
+![People](/images/people.png?raw=true "People")
+
 #### Simulate a text conversation between a mother and child
 ```C#
 var imagination = new Imagination("GPT API KEY");
