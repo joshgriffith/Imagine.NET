@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Diagnostics;
 using Newtonsoft.Json;
 using Imagine.Extensions;
 using Imagine.OpenAI;
@@ -8,16 +9,21 @@ using Imagine.Utilities;
 
 namespace Imagine
 {
-    public class Imagination {
-        private const int SampleContinuationCount = 5;
+    public class Imagination : IDisposable {
         private readonly OpenAIClient _client;
-        private readonly decimal _temperature;
-        private readonly int _maxTokens;
+        private readonly ImaginationSettings _settings;
 
-        public Imagination(string openAiKey, decimal temperature = 0, int maxTokens = 1024) {
+        public Imagination(string openAiKey, decimal temperature = 0)
+            : this(openAiKey, new ImaginationSettings { Temperature = temperature }) {
+        }
+
+        public Imagination(string openAiKey, ImaginationSettings settings) {
             _client = new OpenAIClient(openAiKey);
-            _temperature = temperature;
-            _maxTokens = maxTokens;
+            _settings = settings;
+        }
+
+        public void Dispose() {
+            _client.Dispose();
         }
 
         public IQueryable<T> Imagine<T>(object data, string prompt = "", int count = 0) {
@@ -28,7 +34,7 @@ namespace Imagine
             return new ImaginaryQuery<T>(this, "", prompt, count);
         }
         
-        internal async Task<List<T>> ImagineInternal<T>(object data, string metaPrompt, int count = 0) {
+        internal async Task<List<T>> ImagineInternal<T>(object data, string prompt, int count = 0) {
             var output = new List<T>();
             var type = typeof(T);
 
@@ -40,7 +46,7 @@ namespace Imagine
 
             dataTypeName = dataTypeName.Pluralize();
             
-            var indeterminate = (count == 0);
+            var indeterminate = count == 0;
             var remaining = count;
             var userMessage = string.Empty;
 
@@ -52,36 +58,54 @@ namespace Imagine
                 userMessage += $"Generate {type.Name.Pluralize()}";
             }
             else {
-                userMessage += $"Generate {count} {type.Name.Pluralize()}";
+                userMessage += $"Generate {count} {type.Name.Pluralize()} as JSON";
             }
 
-            if (dataTypeName == "rules") {
+            if (data != null && data.ToString().Length > 4 && dataTypeName == "rules") {
                 userMessage += $" {JsonConvert.SerializeObject(data, JsonSanitizer.Settings)}";
             }
 
-            if (!string.IsNullOrEmpty(metaPrompt)) {
-                userMessage += " with " + metaPrompt;
+            if (!string.IsNullOrEmpty(prompt)) {
+                userMessage += " with " + prompt;
             }
+            
+            var schema = TypescriptSchemaProvider.GetSchema(type);
+
+            if (!schema.Members.Any()) {
+                throw new Exception("No settable public fields or properties found on type: " + type.Name);
+            }
+
+            userMessage += Environment.NewLine + $"["; //{{ \"{schema.Members.First().Name}\":
+
+            var systemMessage = schema.Schema + Environment.NewLine + $"Generate {type.Name.Pluralize()} as JSON using the provided {dataTypeName}. Do not respond with code. Do not respond with anything except valid JSON.";
             
             while (indeterminate || remaining > 0) {
 
-                var query = new OpenAIChatQuery {
-                    MaxTokens = _maxTokens,
-                    Temperature = _temperature
-                };
+                var query = _settings.GetQuery();
 
-                query.AddMessage(GetSystemMessage(type, dataTypeName), OpenAIRoles.System);
-                query.AddMessage(userMessage);
+                query.AddMessage(systemMessage, OpenAIRoles.System);
 
                 if (output.Any()) {
-                    var samples = JsonConvert.SerializeObject(output.TakeLast(SampleContinuationCount));
-                    query.AddMessage(samples[..^1] + ",", OpenAIRoles.Assistant);
+                    var samples = output.TakeLast(_settings.SampleContinuationCount).ToList().Shuffle();
+                    var serialized = JsonConvert.SerializeObject(samples);
+                    query.AddMessage(serialized[..^1] + ",", OpenAIRoles.Assistant);
                 }
                 else {
-                    query.AddMessage($"var {type.Name}Results = [", OpenAIRoles.Assistant);
+                    //query.AddMessage($"[{{ \"{schema.Members.First().Name}\":", OpenAIRoles.Assistant); //var {type.Name}Results = 
                 }
 
-                var result = await _client.CompleteChatAsync(query);
+                query.AddMessage(userMessage);
+
+                OpenAICompletionResult result;
+
+                if (_settings.Performance == ImaginationSettings.PerformanceMode.HighQuality) {
+                    result = await _client.CompleteChatAsync(query);
+                }
+                else {
+                    var request = query.ToTextCompletionRequest();
+                    request.PresencePenalty = 0.5m;
+                    result = await _client.CompleteTextAsync(request);
+                }
 
                 var completedEntries = JsonSanitizer.Deserialize<T>(result.Text);
 
@@ -94,21 +118,17 @@ namespace Imagine
                 remaining -= completedEntries.Count;
                 output.AddRange(completedEntries);
 
+                Debug.WriteLine($"Received {completedEntries.Count} valid entries.");
+
                 if (indeterminate && result.FinishReason == "stop" && count == 0) {
                     break;
                 }
             }
 
-            if (indeterminate && count == 0)
+            if (indeterminate || count == 0)
                 return output.ToList();
             
             return output.Take(count).ToList();
-        }
-        
-        private string GetSystemMessage(Type type, string dataTypeName) {
-            var schema = TypescriptSchemaProvider.GetSchema(type);
-            var systemMessage = schema + Environment.NewLine + Environment.NewLine + $"Generate {type.Name} as JSON using the provided {dataTypeName}. Do not respond with code. Do not respond with anything except valid JSON.";
-            return systemMessage;
         }
     }
 }

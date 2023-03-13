@@ -1,22 +1,10 @@
-﻿namespace Imagine.OpenAI
-{
-    public enum OpenAIEngines
-    {
-        Ada,
-        Babbage,
-        ContentFilterAlpha,
-        Curie,
-        CurieInstructBeta,
-        CushmanCodex,
-        Davinci,
+﻿namespace Imagine.OpenAI {
+    public enum OpenAIEngines {
         DavinciCodex,
         DavinciInstructBeta,
         TextDavinci001,
         TextDavinci002,
         TextDavinci003,
-        CodeDavinci001,
-        CodeDavinci002,
-        TextCurie001,
-        TextBabbage001
+        ChatGptTurbo
     }
 }

@@ -1,7 +1,5 @@
-﻿namespace Imagine.OpenAI
-{
-    public class OpenAICompletionQuery
-    {
+﻿namespace Imagine.OpenAI {
+    public class OpenAICompletionQuery {
 
         public string Prompt { get; set; }
         public int MaxTokens { get; set; } = 16;
@@ -11,19 +9,15 @@
         public decimal PresencePenalty { get; set; } = 0;
         public decimal FrequencyPenalty { get; set; } = 0;
 
-        public OpenAICompletionQuery(OpenAIEngines engine, string prompt)
-        {
+        public OpenAICompletionQuery(OpenAIEngines engine, string prompt) {
             Engine = engine;
             Prompt = prompt;
             Stops = new List<string>();
         }
 
-        public object ToRequestBody()
-        {
-            if (Stops != null && Stops.Any())
-            {
-                return new
-                {
+        public object ToRequestBody() {
+            if (Stops != null && Stops.Any()) {
+                return new {
                     prompt = Prompt,
                     max_tokens = MaxTokens,
                     temperature = Temperature,
@@ -34,8 +28,7 @@
                 };
             }
 
-            return new
-            {
+            return new {
                 prompt = Prompt,
                 max_tokens = MaxTokens,
                 temperature = Temperature,

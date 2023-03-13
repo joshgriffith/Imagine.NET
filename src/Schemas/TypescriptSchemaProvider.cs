@@ -4,8 +4,9 @@ using System.Text;
 namespace Imagine.Schemas {
     internal static class TypescriptSchemaProvider {
 
-        public static string GetSchema(Type type) {
+        public static TypeSchema GetSchema(Type type) {
 
+            var schema = new TypeSchema(type);
             var types = new List<Type> { type };
 
             void TryAddType(Type type) {
@@ -16,13 +17,17 @@ namespace Imagine.Schemas {
             
             foreach (var property in GetProperties(type)) {
                 TryAddType(property.PropertyType);
+                schema.Members.Add(property);
             }
 
             foreach (var field in GetFields(type)) {
                 TryAddType(field.FieldType);
+                schema.Members.Add(field);
             }
 
-            return string.Join(Environment.NewLine, types.Select(InternalGetSchema));
+            schema.Schema = string.Join(Environment.NewLine, types.Select(InternalGetSchema));
+
+            return schema;
         }
 
         private static string InternalGetSchema(Type type) {

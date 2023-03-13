@@ -1,8 +1,6 @@
-﻿namespace Imagine.OpenAI
-{
+﻿namespace Imagine.OpenAI {
 
-    public class OpenAIChatQuery
-    {
+    public class OpenAIChatQuery {
         public string Model { get; set; } = "gpt-3.5-turbo";
         public List<OpenAIChatMessage> Messages { get; set; } = new();
         public int MaxTokens { get; set; } = 16;
@@ -11,10 +9,8 @@
         public decimal PresencePenalty { get; set; } = 0;
         public decimal FrequencyPenalty { get; set; } = 0;
 
-        public OpenAIChatQuery AddMessage(string content, OpenAIRoles role = OpenAIRoles.User)
-        {
-            Messages.Add(new OpenAIChatMessage
-            {
+        public OpenAIChatQuery AddMessage(string content, OpenAIRoles role = OpenAIRoles.User) {
+            Messages.Add(new OpenAIChatMessage {
                 Content = content,
                 Role = role.ToString().ToLower()
             });
@@ -22,12 +18,13 @@
             return this;
         }
 
-        public object ToRequestBody()
-        {
-            if (Stops != null && Stops.Any())
-            {
-                return new
-                {
+        public OpenAITextCompletionRequest ToTextCompletionRequest() {
+            return new OpenAITextCompletionRequest(this);
+        }
+
+        public object ToRequestBody() {
+            if (Stops != null && Stops.Any()) {
+                return new {
                     model = Model,
                     messages = Messages,
                     max_tokens = MaxTokens,
@@ -39,8 +36,7 @@
                 };
             }
 
-            return new
-            {
+            return new {
                 model = Model,
                 messages = Messages,
                 max_tokens = MaxTokens,

@@ -24,7 +24,7 @@ namespace Imagine.Utilities {
                 return "[]";
             }
 
-            if ((!json.Contains("[") && !json.Contains("]")) || !json.Contains("{")) {
+            if (!json.Contains("[") && !json.Contains("]") && !json.Contains("{")) {
                 throw new Exception("Received unparseable result: " + json);
             }
 
