@@ -1,10 +1,31 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Title>Imagine.NET</Title>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RunAnalyzersDuringBuild>False</RunAnalyzersDuringBuild>
+    <RunAnalyzersDuringLiveAnalysis>False</RunAnalyzersDuringLiveAnalysis>
+    <EnableNETAnalyzers>False</EnableNETAnalyzers>
+	<PackageLicenseExpression>MIT</PackageLicenseExpression>
+	<PackageId>Imagine.NET</PackageId>
+    <Version>0.1.0</Version>
+    <Authors>Josh Griffith</Authors>
+    <Company>Cheevly</Company>
+    <PackageProjectUrl>https://github.com/joshgriffith/Imagine.NET</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/joshgriffith/Imagine.NET</RepositoryUrl>
+    <PackageTags>ai gpt .net C# linq</PackageTags>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="ExpressionToCodeLib" Version="3.5.0" />
