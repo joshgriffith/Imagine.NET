@@ -18,28 +18,36 @@ Provide a list of input data, a .NET Type and a text prompt and get back a new l
 
 ## Getting started
 
-#### Generate a list of 5 people whose names start with 's'
+#### Generate a list of 5 people whose first name start with 'b' and last name starts with 'd'
 ```C#
 var imagination = new Imagination("GPT API KEY");
-var results = imagination.Imagine<Person>(count: 5).Where(person => person.Name.StartsWith("s")).ToList();
+var results = imagination.Imagine<Person>(count: 5).Where(person => person.FirstName.StartsWith("b") && person.LastName.StartsWith("d")).ToList();
 
 public class Person {
-  public string Name;
-  public int Age;
+    public string FirstName;
+    public string LastName;
+    public int Age;
 }
 ```
 
 #### Simulate a text conversation between a mother and child
 ```C#
 var imagination = new Imagination("GPT API KEY");
-var results = imagination.Imagine<SMSMessage>("mother and child", 5).ToList();
+var messages = imagination.Imagine<SMSMessage>("conversation between mother and child", 5).ToList();
 
 public class SMSMessage {
-  public string Sender;
-  public string Recipient;
-  public string Content;
+    public Person Sender;
+    public Person Recipient;
+    public string Text;
+}
+
+public class Person {
+    public string FirstName;
+    public string LastName;
+    public int Age;
 }
 ```
+![Messages](/images/messages.png?raw=true "Messages")
 
 #### Generate character abilities and then simulate a battle
 ```C#
@@ -74,6 +82,9 @@ public class CombatRound {
   public string Description;
 }
 ```
+Combatant 1               |  Combatant 2
+:-------------------------:|:-------------------------:
+![Abilities](/images/abilities1.png?raw=true "Abilities")  |  ![Abilities](/images/abilities2.png?raw=true "Abilities")
 
 ## Use cases
  - Procedural content generation
