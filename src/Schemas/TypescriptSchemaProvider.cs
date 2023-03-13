@@ -30,11 +30,11 @@ namespace Imagine.Schemas {
             builder.AppendLine("class " + type.Name + " {");
             
             foreach (var property in GetProperties(type)) {
-                builder.AppendLine($"  {property.Name}: {ResolveType(property.PropertyType)};");
+                builder.AppendLine($"  {property.Name}: {ResolveType(property.PropertyType)}");
             }
 
             foreach (var field in GetFields(type)) {
-                builder.AppendLine($"  {field.Name}: {ResolveType(field.FieldType)};");
+                builder.AppendLine($"  {field.Name}: {ResolveType(field.FieldType)}");
             }
 
             builder.AppendLine("}");
@@ -68,7 +68,7 @@ namespace Imagine.Schemas {
                 return "array";
             }
 
-            return "object";
+            return type.Name;
         }
 
         private static List<PropertyInfo> GetProperties(Type type) {

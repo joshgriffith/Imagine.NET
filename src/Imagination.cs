@@ -56,7 +56,7 @@ namespace Imagine
             }
 
             if (!string.IsNullOrEmpty(metaPrompt)) {
-                userMessage += " regarding " + metaPrompt;
+                userMessage += " with " + metaPrompt;
             }
             
             while (indeterminate || remaining > 0) {
