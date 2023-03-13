@@ -21,7 +21,9 @@ Provide a list of input data, a .NET Type and a text prompt and get back a new l
 #### Generate a list of 5 people whose first name start with 'b' and last name starts with 'd'
 ```C#
 var imagination = new Imagination("GPT API KEY");
-var results = imagination.Imagine<Person>(count: 5).Where(person => person.FirstName.StartsWith("b") && person.LastName.StartsWith("d")).ToList();
+var results = imagination.Imagine<Person>(count: 5)
+                  .Where(person => person.FirstName.StartsWith("b") && person.LastName.StartsWith("d"))
+                  .ToList();
 
 public class Person {
     public string FirstName;
@@ -29,6 +31,8 @@ public class Person {
     public int Age;
 }
 ```
+
+![People](/images/people.png?raw=true "People")
 
 #### Simulate a text conversation between a mother and child
 ```C#
@@ -85,6 +89,8 @@ public class CombatRound {
 Combatant 1               |  Combatant 2
 :-------------------------:|:-------------------------:
 ![Abilities](/images/abilities1.png?raw=true "Abilities")  |  ![Abilities](/images/abilities2.png?raw=true "Abilities")
+
+![Combat](/images/combat.png?raw=true "Combat")
 
 ## Use cases
  - Procedural content generation
