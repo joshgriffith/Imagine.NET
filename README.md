@@ -87,6 +87,7 @@ public class CombatRound {
 Combatant 1               |  Combatant 2
 :-------------------------:|:-------------------------:
 ![Abilities](/images/abilities1.png?raw=true "Abilities")  |  ![Abilities](/images/abilities2.png?raw=true "Abilities")
+
 ![Combat](/images/combat.png?raw=true "Combat")
 
 ## Use cases
