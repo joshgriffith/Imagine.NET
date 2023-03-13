@@ -44,7 +44,7 @@ namespace Imagine
             var remaining = count;
             var userMessage = string.Empty;
 
-            if (data != null && data.ToString().Length > 0) {
+            if (data != null && data.ToString().Length > 0 && dataTypeName != "rules") {
                 userMessage += $"Given these {dataTypeName.ToLower()}: {JsonConvert.SerializeObject(data, JsonSanitizer.Settings)}" + Environment.NewLine;
             }
 
@@ -53,6 +53,10 @@ namespace Imagine
             }
             else {
                 userMessage += $"Generate {count} {type.Name.Pluralize()}";
+            }
+
+            if (dataTypeName == "rules") {
+                userMessage += $" {JsonConvert.SerializeObject(data, JsonSanitizer.Settings)}";
             }
 
             if (!string.IsNullOrEmpty(metaPrompt)) {
@@ -85,6 +89,8 @@ namespace Imagine
                     throw new Exception("Failed to complete type: " + type.Name);
                 }
 
+                // Todo: Apply filter expression
+
                 remaining -= completedEntries.Count;
                 output.AddRange(completedEntries);
 
@@ -101,7 +107,7 @@ namespace Imagine
         
         private string GetSystemMessage(Type type, string dataTypeName) {
             var schema = TypescriptSchemaProvider.GetSchema(type);
-            var systemMessage = schema + Environment.NewLine + Environment.NewLine + $"Generate {type.Name} as JSON using the provided {dataTypeName}. Do not respond with anything except JSON.";
+            var systemMessage = schema + Environment.NewLine + Environment.NewLine + $"Generate {type.Name} as JSON using the provided {dataTypeName}. Do not respond with code. Do not respond with anything except valid JSON.";
             return systemMessage;
         }
     }

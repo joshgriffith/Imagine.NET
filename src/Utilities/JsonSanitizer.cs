@@ -24,6 +24,10 @@ namespace Imagine.Utilities {
                 return "[]";
             }
 
+            if ((!json.Contains("[") && !json.Contains("]")) || !json.Contains("{")) {
+                throw new Exception("Received unparseable result: " + json);
+            }
+
             if (!json.StartsWith("[")) {
                 var offset = json.IndexOf("[");
 

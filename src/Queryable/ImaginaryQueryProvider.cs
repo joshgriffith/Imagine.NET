@@ -2,6 +2,7 @@
 using System.Linq.Expressions;
 using System.Reflection;
 using ExpressionToCodeLib;
+using FastExpressionCompiler;
 
 namespace Imagine.Queryable {
     public class ImaginaryQueryProvider : IQueryProvider {
@@ -45,7 +46,7 @@ namespace Imagine.Queryable {
                 .MakeGenericMethod(type);
 
             var task = method.Invoke(this, new object[] { expression }) as Task<IList>;
-            var results = task.Result;
+            var results = task.ConfigureAwait(false).GetAwaiter().GetResult();
 
             return (TResult) results;
         }
@@ -53,6 +54,8 @@ namespace Imagine.Queryable {
         private async Task<IList> InternalExecute<T>(Expression expression) {
             var code = ExpressionToCode.ToCode(expression);
 
+            code = code.Replace("\"", "'");
+            
             if (code == "this") {
                 return await _imagination.ImagineInternal<T>(_data, _prompt, _count);
             }

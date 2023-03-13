@@ -80,9 +80,9 @@ namespace Imagine.Schemas {
         }
 
         private static Type GetEnumerableType(Type type) {
-            return (from intType in type.GetInterfaces()
-                where intType.IsGenericType && intType.GetGenericTypeDefinition() == typeof(IEnumerable<>)
-                select intType.GetGenericArguments()[0]).FirstOrDefault();
+            return (from each in type.GetInterfaces()
+                where each.IsGenericType && each.GetGenericTypeDefinition() == typeof(IEnumerable<>)
+                select each.GetGenericArguments()[0]).FirstOrDefault();
         }
     }
 }
